@@ -7,9 +7,9 @@ sleep_intervals=10
 log_date=$(date +%m-%d-%Y)
 log_path=$storage_logs_home/storage_log_$log_date
 
-TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
+ROOK_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-operator -o name)
 
-result=$(oc rsh -n openshift-storage $TOOLS_POD ceph health)
+result=$(oc rsh -n openshift-storage $ROOK_POD ceph -c /var/lib/rook/openshift-storage/openshift-storage.config health)
 substr="${result:0:9}"
 
 if [[ "$substr" != "HEALTH_OK" ]]; then
@@ -29,21 +29,21 @@ if [[ "$substr" != "HEALTH_OK" ]]; then
 
         for (( index=1; index<=$number_of_collections; index+=1 ))
         do
-                TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
+                ROOK_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-operator -o name)
                 echo `date` >> $log_path/ceph_summary.log
-                oc rsh -n openshift-storage $TOOLS_POD ceph -s >> $log_path/ceph_summary.log
+                oc rsh -n openshift-storage $ROOK_POD ceph -c /var/lib/rook/openshift-storage/openshift-storage.config -s >> $log_path/ceph_summary.log
 
-                TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
+                ROOK_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-operator -o name)
                 echo `date` >> $log_path/ceph_osd_tree.log
-                oc rsh -n openshift-storage $TOOLS_POD ceph osd tree >> $log_path/ceph_osd_tree.log
+                oc rsh -n openshift-storage $ROOK_POD ceph -c /var/lib/rook/openshift-storage/openshift-storage.config osd tree >> $log_path/ceph_osd_tree.log
 
-                TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
+                ROOK_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-operator -o name)
                 echo `date` >> $log_path/ceph_df_detail.log
-                oc rsh -n openshift-storage $TOOLS_POD ceph df detail >> $log_path/ceph_df_detail.log
+                oc rsh -n openshift-storage $ROOK_POD ceph -c /var/lib/rook/openshift-storage/openshift-storage.config df detail >> $log_path/ceph_df_detail.log
 
-                TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
+                ROOK_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-operator -o name)
                 echo `date` >> $log_path/ceph_health_detail.log
-                oc rsh -n openshift-storage $TOOLS_POD ceph health detail >> $log_path/ceph_health_detail.log
+                oc rsh -n openshift-storage $ROOK_POD ceph -c /var/lib/rook/openshift-storage/openshift-storage.config health detail >> $log_path/ceph_health_detail.log
 
                 sleep $sleep_intervals
        done
@@ -51,3 +51,4 @@ if [[ "$substr" != "HEALTH_OK" ]]; then
    fi
 
 fi
+
